@@ -1,4 +1,4 @@
-///<reference path="../phaser/phaser.d.ts" />
+///<reference path="../node_modules/phaser/typescript/phaser.d.ts" />
 import {Drone} from "./drone";
 import {Map} from "./map";
 import {Component} from "angular2/core";

@@ -1,4 +1,4 @@
-///<reference path="../phaser/phaser.d.ts" />
+///<reference path="../node_modules/phaser/typescript/phaser.d.ts" />
 export class Drone {
     public sprite:Phaser.Sprite;
 
