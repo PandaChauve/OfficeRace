@@ -93,7 +93,7 @@ class SimpleGame{
                 for(let idx in data){
                     if(data[idx].id!= that._player.GetId()) {
                         if(data[idx].gameData == 0){
-                            alert("looserrrrrrr");
+                            alert("looser");
                             that._game.paused = true;
                         }
                         that.UpdateDrone(data[idx]);
