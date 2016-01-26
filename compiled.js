@@ -267,7 +267,7 @@ var SimpleGame = (function () {
     SimpleGame.prototype.update = function () {
         this._player.TicUpdate(this._keys);
         this._updateCounter = (this._updateCounter + 1) % 10;
-        if (this._updateCounter == 0 || this._map.IsMapComplete()) {
+        if (this._updateCounter == 0) {
             var that = this;
             this._api.SendPos(this._player.GetPosition(), this._map.RemainingTargetCount(), function (data) {
                 for (var idx in data) {
@@ -280,10 +280,10 @@ var SimpleGame = (function () {
                     }
                 }
             });
-        }
-        if (this._map.IsMapComplete()) {
-            alert("I think you are our winner ...");
-            that._game.paused = true;
+            if (this._map.IsMapComplete()) {
+                alert("I think you are our winner ...");
+                that._game.paused = true;
+            }
         }
     };
     SimpleGame.prototype.FindDrone = function (id) {

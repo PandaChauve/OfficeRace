@@ -87,7 +87,7 @@ class SimpleGame{
     public update() {
         this._player.TicUpdate(this._keys);
         this._updateCounter = (this._updateCounter+1)%10;
-        if(this._updateCounter == 0 || this._map.IsMapComplete()){
+        if(this._updateCounter == 0){
             var that = this;
             this._api.SendPos(this._player.GetPosition(), this._map.RemainingTargetCount(),function(data : StateReport[]) : void{
                 for(let idx in data){
@@ -100,11 +100,11 @@ class SimpleGame{
                     }
                 }
             });
-        }
 
-        if(this._map.IsMapComplete()){
-            alert("I think you are our winner ...");
-            that._game.paused = true;
+            if(this._map.IsMapComplete()){
+                alert("I think you are our winner ...");
+                that._game.paused = true;
+            }
         }
     }
 
