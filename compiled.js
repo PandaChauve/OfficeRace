@@ -43,7 +43,7 @@ var Drone = (function () {
         return [this.sprite.body.velocity.x, this.sprite.body.velocity.y, this.sprite.body.x, this.sprite.body.y, this.sprite.body.angle, this.GetLevel()];
     };
     Drone.prototype.SetPosition = function (data, ref) {
-        if (ref <= this._lastUpdate)
+        if (ref <= this._lastUpdate || data == null)
             return;
         this._lastUpdate = ref;
         this.sprite.body.velocity.x = data[0];
@@ -199,9 +199,10 @@ var Map = (function () {
 ///<reference path="drone.ts" />
 ///<reference path="service-api.ts" />
 ///<reference path="map.ts" />
-var SimpleGameDebug = (function () {
-    function SimpleGameDebug() {
+var SimpleGame = (function () {
+    function SimpleGame() {
         this._api = new DroneApi();
+        this._updateCounter = 0;
         var that = this;
         this._game = new Phaser.Game(1920 * 0.8, 1080 * 0.8, Phaser.AUTO, 'content', {
             preload: function () {
@@ -215,7 +216,7 @@ var SimpleGameDebug = (function () {
             }
         });
     }
-    SimpleGameDebug.prototype.preload = function () {
+    SimpleGame.prototype.preload = function () {
         this._game.load.spritesheet('drone', 'ressources/drone.png', 17, 19);
         this._game.load.spritesheet('diamond', 'ressources/diamond.png', 17, 19);
         this._game.load.tilemap('bottom', 'ressources/sans-titre.json', null, Phaser.Tilemap.TILED_JSON);
@@ -223,7 +224,7 @@ var SimpleGameDebug = (function () {
         this._game.load.tilemap('top', 'ressources/sans-titre.json', null, Phaser.Tilemap.TILED_JSON);
         this._game.load.image('office', 'ressources/test.bmp');
     };
-    SimpleGameDebug.prototype.create = function () {
+    SimpleGame.prototype.create = function () {
         this._game.physics.startSystem(Phaser.Physics.P2JS);
         var that = this;
         this._drones = [];
@@ -244,7 +245,7 @@ var SimpleGameDebug = (function () {
         this._game.physics.p2.setBoundsToWorld(true, true, true, true, false);
         this._map.SetElement(this._player);
     };
-    SimpleGameDebug.prototype.collide = function (left, right) {
+    SimpleGame.prototype.collide = function (left, right) {
         if (left.mainDrone && right.mainDrone === undefined) {
             this._map.SetCollide(right.droneLevel);
         }
@@ -263,26 +264,29 @@ var SimpleGameDebug = (function () {
         }
         return left.droneLevel == right.droneLevel; //collide if same level
     };
-    SimpleGameDebug.prototype.update = function () {
+    SimpleGame.prototype.update = function () {
         this._player.TicUpdate(this._keys);
-        var that = this;
-        this._api.SendPos(this._player.GetPosition(), this._map.RemainingTargetCount(), function (data) {
-            for (var idx in data) {
-                if (data[idx].id != that._player.GetId()) {
-                    if (data[idx].gameData == 0) {
-                        alert("looserrrrrrr");
-                        that._game.paused = true;
+        this._updateCounter = (this._updateCounter + 1) % 10;
+        if (this._updateCounter == 0 || this._map.IsMapComplete()) {
+            var that = this;
+            this._api.SendPos(this._player.GetPosition(), this._map.RemainingTargetCount(), function (data) {
+                for (var idx in data) {
+                    if (data[idx].id != that._player.GetId()) {
+                        if (data[idx].gameData == 0) {
+                            alert("looserrrrrrr");
+                            that._game.paused = true;
+                        }
+                        that.UpdateDrone(data[idx]);
                     }
-                    that.UpdateDrone(data[idx]);
                 }
-            }
-        });
+            });
+        }
         if (this._map.IsMapComplete()) {
             alert("I think you are our winner ...");
             that._game.paused = true;
         }
     };
-    SimpleGameDebug.prototype.FindDrone = function (id) {
+    SimpleGame.prototype.FindDrone = function (id) {
         for (var idx in this._drones) {
             var drone = this._drones[idx];
             if (drone.GetId() == id)
@@ -290,7 +294,7 @@ var SimpleGameDebug = (function () {
         }
         return null;
     };
-    SimpleGameDebug.prototype.UpdateDrone = function (data) {
+    SimpleGame.prototype.UpdateDrone = function (data) {
         var drone = this.FindDrone(data.id);
         if (drone == null) {
             drone = new Drone(this._game, false);
@@ -300,9 +304,9 @@ var SimpleGameDebug = (function () {
         drone.SetPosition(data.droneData, data.counter);
         this._map.SetElement(drone);
     };
-    SimpleGameDebug.prototype.render = function () {
+    SimpleGame.prototype.render = function () {
     };
-    SimpleGameDebug.prototype.changeLayer = function (key) {
+    SimpleGame.prototype.changeLayer = function (key) {
         if (key.keyCode == Phaser.Keyboard.SPACEBAR) {
             this._map.GoUp(this._player);
         }
@@ -311,9 +315,9 @@ var SimpleGameDebug = (function () {
         }
         this._map.ResetCollide();
     };
-    return SimpleGameDebug;
+    return SimpleGame;
 })();
 window.onload = function () {
-    var game = new SimpleGameDebug();
+    var game = new SimpleGame();
 };
 //# sourceMappingURL=compiled.js.map

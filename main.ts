@@ -3,7 +3,7 @@
 ///<reference path="service-api.ts" />
 ///<reference path="map.ts" />
 
-class SimpleGameDebug {
+class SimpleGame{
     private _game: Phaser.Game;
     private _drones: Drone[];
     private _player: Drone;
@@ -83,21 +83,24 @@ class SimpleGameDebug {
         }
         return left.droneLevel == right.droneLevel; //collide if same level
     }
-
+    private _updateCounter = 0;
     public update() {
         this._player.TicUpdate(this._keys);
-        var that = this;
-        this._api.SendPos(this._player.GetPosition(), this._map.RemainingTargetCount(),function(data : StateReport[]) : void{
-            for(let idx in data){
-                if(data[idx].id!= that._player.GetId()) {
-                    if(data[idx].gameData == 0){
-                        alert("looserrrrrrr");
-                        that._game.paused = true;
+        this._updateCounter = (this._updateCounter+1)%10;
+        if(this._updateCounter == 0 || this._map.IsMapComplete()){
+            var that = this;
+            this._api.SendPos(this._player.GetPosition(), this._map.RemainingTargetCount(),function(data : StateReport[]) : void{
+                for(let idx in data){
+                    if(data[idx].id!= that._player.GetId()) {
+                        if(data[idx].gameData == 0){
+                            alert("looserrrrrrr");
+                            that._game.paused = true;
+                        }
+                        that.UpdateDrone(data[idx]);
                     }
-                    that.UpdateDrone(data[idx]);
                 }
-            }
-        });
+            });
+        }
 
         if(this._map.IsMapComplete()){
             alert("I think you are our winner ...");
@@ -141,6 +144,6 @@ class SimpleGameDebug {
 
 
 window.onload = () => {
-    var game = new SimpleGameDebug();
+    var game = new SimpleGame();
 
 };

@@ -1,3 +1,9 @@
+//
+//
+// This is not a good api design !
+//
+//
+
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
@@ -41,34 +47,33 @@ var games = {
         return this._list.length-1;
     },
     GetGames : function(){
-        var ret = [];
-        for(var idx in this._list){
-            ret.push(this._list[idx].id);
-        }
-        return ret;
+        return this._list;
     },
     GetGame : function(id){
         if(id >= this._list.length)
             return null;
         return this._list[id];
     },
+    Reset : function(){
+        this._list = [];
+        this.CreateGame();
+        return "success";
+    }
 };
-games.CreateGame();//always create game 0
+games.Reset();//always create game 0
 
 router.route('/games/new/').get(function (req, res) {
     res.json(games.CreateGame());
 });
 
-router.route('/games/:id/').get(function (req, res) {
-    res.json(games.GetGameDetails(req.params.id));
+router.route('/games/reset/').get(function (req, res) {
+    res.json(games.Reset());
 });
 
 router.route('/games/:id/register').get(function (req, res) { //yes get, too lasy to do something else
     res.json(games.GetGame(req.params.id).Register());
 });
-router.route('/games/:id/unregister/:uid').get(function (req, res) {//yes get, too lasy to do something else
-    res.json(games.GetGame(req.params.id).Unregister(req.params.uid));
-});
+
 router.route('/games/:id/update/:uid').post(function (req, res) {
     var data = req.body;
     var game = games.GetGame(req.params.id);

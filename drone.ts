@@ -51,7 +51,7 @@ class Drone {
     }
     private _lastUpdate = -1;
     SetPosition(data : number[], ref : number){
-        if(ref <= this._lastUpdate)
+        if(ref <= this._lastUpdate || data == null)
             return;
         this._lastUpdate = ref;
         this.sprite.body.velocity.x = data[0];
