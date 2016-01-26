@@ -86,8 +86,8 @@ router.route('/games').get(function (req, res) {
     res.json(games.GetGames());
 });
 
-app.use('/droneApi', router);
+app.use('/', router);
 app.listen(1338);
 
-console.log("started");
+console.log("started " + 1338);
 

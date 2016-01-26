@@ -1,8 +1,7 @@
 ///<reference path="phaser/phaser.d.ts" />
 ///<reference path="drone.ts" />
-///<reference path="drone_api.ts" />
+///<reference path="service-api.ts" />
 ///<reference path="map.ts" />
-///<reference path="target.ts" />
 
 class SimpleGameDebug {
     private _game: Phaser.Game;

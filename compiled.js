@@ -66,7 +66,7 @@ var Drone = (function () {
 var DroneApi = (function () {
     function DroneApi() {
         this._id = -1;
-        this._host = "http://192.168.1.3:1338/droneApi/";
+        this._host = "http://whenwillyoulose.com:1338/";
     }
     DroneApi.prototype.Register = function (cb) {
         var that = this;
@@ -196,27 +196,9 @@ var Map = (function () {
     return Map;
 })();
 ///<reference path="phaser/phaser.d.ts" />
-var Target = (function () {
-    function Target(game) {
-        this.sprite = game.add.sprite(8.5, 19, 'diamond');
-        game.physics.p2.enable(this.sprite);
-        this.sprite.body.x = 300;
-        this.sprite.body.isTarget = true;
-        this.SetLevel(1);
-    }
-    Target.prototype.SetLevel = function (lvl) {
-        this.sprite.body.droneLevel = lvl;
-    };
-    Target.prototype.GetLevel = function () {
-        return this.sprite.body.droneLevel;
-    };
-    return Target;
-})();
-///<reference path="phaser/phaser.d.ts" />
 ///<reference path="drone.ts" />
-///<reference path="drone_api.ts" />
+///<reference path="service-api.ts" />
 ///<reference path="map.ts" />
-///<reference path="target.ts" />
 var SimpleGameDebug = (function () {
     function SimpleGameDebug() {
         this._api = new DroneApi();

@@ -9,7 +9,7 @@ interface StateReport{
 
 class DroneApi{
     private _id = -1;
-    private _host = "http://192.168.1.3:1338/droneApi/";
+    private _host = "http://whenwillyoulose.com:1338/";
     Register(cb){
         var that = this;
         $.get( this._host+"games/0/register", function( data ) {
