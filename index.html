@@ -3,15 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title>Office Race</title>
+    <script src="node_modules/es6-shim/es6-shim.min.js"></script>
+    <script src="node_modules/systemjs/dist/system-polyfills.js"></script>
+    <script src="node_modules/angular2/bundles/angular2-polyfills.js"></script>
+    <script src="node_modules/systemjs/dist/system.src.js"></script>
+    <script src="node_modules/rxjs/bundles/Rx.js"></script>
+    <script src="node_modules/angular2/bundles/angular2.dev.js"></script>
     <script src="https://code.jquery.com/jquery-2.2.0.js"></script>
     <script src="phaser/phaser.min.js"></script>
     <script src="phaser/p2.js"></script>
-    <script src="compiled.js"></script>
+
+    <script>
+        System.config({
+            packages: {
+                app: {
+                    format: 'register',
+                    defaultExtension: 'js'
+                }
+            }
+        });
+        System.import('app/boot')
+                .then(null, console.error.bind(console));
+    </script>
+
 </head>
 <body style="background:black">
 
 <a href="http://whenwillyoulose.com:1338/games/reset">reset</a>
 <a href="http://whenwillyoulose.com:1338/games/">state</a>
+<office-race></office-race>
 <a href="https://github.com/PandaChauve/OfficeRace/tree/master">github</a>
 </body>
 </html>

@@ -1,3 +1,5 @@
+import {Drone} from "./drone";
+
 class Slice{
     public Static : Phaser.Group;
     public Dynamic : Phaser.Group;
@@ -13,7 +15,7 @@ class Slice{
     }
 
 }
-class Map
+export class Map
 {
     private _currentLvl = -1;
     private _slices = new Array<Slice>();

@@ -1,5 +1,5 @@
-///<reference path="phaser/phaser.d.ts" />
-class Drone {
+///<reference path="../phaser/phaser.d.ts" />
+export class Drone {
     public sprite:Phaser.Sprite;
 
     constructor(game:Phaser.Game, ismain : boolean) {

@@ -1,9 +1,15 @@
-///<reference path="phaser/phaser.d.ts" />
-///<reference path="drone.ts" />
-///<reference path="service-api.ts" />
-///<reference path="map.ts" />
+///<reference path="../phaser/phaser.d.ts" />
+import {Drone} from "./drone";
+import {Map} from "./map";
+import {Component} from "angular2/core";
+import {DroneApi} from "./service-api";
+import {StateReport} from "./service-api";
 
-class SimpleGame{
+@Component({
+    selector: 'office-race',
+    template: '<div id="phaser-content"></div>'
+})
+export class SimpleGame{
     private _game: Phaser.Game;
     private _drones: Drone[];
     private _player: Drone;
@@ -12,7 +18,7 @@ class SimpleGame{
     private _api = new DroneApi();
     public constructor() {
         var that = this;
-        this._game = new Phaser.Game(1920*0.8, 1080*0.8, Phaser.AUTO, 'content', {
+        this._game = new Phaser.Game(1920*0.8, 1080*0.8, Phaser.AUTO, 'phaser-content', {
             preload: function () {
                 return that.preload();
             }, create: function () {
@@ -43,7 +49,7 @@ class SimpleGame{
         this._map.AddTarget(100,100,0);
         this._map.AddTarget(200,200,1);
         this._map.AddTarget(150,150,2);
-        this._api.Register(function(id){
+        this._api.Register(function(id : number){
             that._player.SetId(id);
         });
 
@@ -61,8 +67,7 @@ class SimpleGame{
         this._map.SetElement(this._player);
     }
 
-    private collide(left, right){
-
+    private collide(left : any, right : any){
         if(left.mainDrone && right.mainDrone === undefined){ //FIXME you cna go up on target
             this._map.SetCollide(right.droneLevel);
         }
@@ -83,8 +88,9 @@ class SimpleGame{
         }
         return left.droneLevel == right.droneLevel; //collide if same level
     }
+
     private _updateCounter = 0;
-    public update() {
+    public update() :void {
         this._player.TicUpdate(this._keys);
         this._updateCounter = (this._updateCounter+1)%10;
         if(this._updateCounter == 0){
@@ -117,7 +123,7 @@ class SimpleGame{
         return null;
     }
 
-    public UpdateDrone(data : StateReport){
+    public UpdateDrone(data : StateReport) : void{
         var drone = this.FindDrone(data.id);
         if(drone == null)
         {
@@ -128,11 +134,12 @@ class SimpleGame{
         drone.SetPosition(data.droneData, data.counter);
         this._map.SetElement(drone);
     }
-    public render(){
+
+    public render() : void{
 
     }
 
-    private changeLayer(key) : void{
+    private changeLayer(key: Phaser.Key) : void{
         if(key.keyCode == Phaser.Keyboard.SPACEBAR){
             this._map.GoUp(this._player);
         }else if(key.keyCode == Phaser.Keyboard.CONTROL){
@@ -142,8 +149,3 @@ class SimpleGame{
     }
 }
 
-
-window.onload = () => {
-    var game = new SimpleGame();
-
-};

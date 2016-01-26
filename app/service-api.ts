@@ -1,18 +1,18 @@
-///<reference path="jquery.d.ts" />
+///<reference path="../jquery.d.ts" />
 
-interface StateReport{
+export interface StateReport{
     id : number;
     gameData : any;
     droneData:any;
     counter : number;
 };
 
-class DroneApi{
+export class DroneApi{
     private _id = -1;
     private _host = "http://whenwillyoulose.com:1338/";
-    Register(cb){
+    Register(cb : Function){
         var that = this;
-        $.get( this._host+"games/0/register", function( data ) {
+        $.get( this._host+"games/0/register", function( data:any ) {
             that._id = data;
             cb(data);
         });
