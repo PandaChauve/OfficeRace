@@ -19,14 +19,14 @@ export class Drone {
     private Slow(): void {
         this.sprite.body.data.velocity[0] *= 0.985;
         this.sprite.body.data.velocity[1] *= 0.985;
+        this.sprite.body.data.angularVelocity *= 0.7;
     }
 
     private UpdateAngle(turnLeft:boolean, turnRight:boolean):void {
         if (turnLeft == turnRight)
-            this.sprite.body.setZeroRotation();
+            return;
         else
-            turnLeft ? this.sprite.body.rotateLeft(100): this.sprite.body.rotateRight(100);
-
+            turnLeft ? this.sprite.body.rotateLeft(60): this.sprite.body.rotateRight(60);
     }
 
     private UpdateSpeed(accelerate:boolean, decelerate:boolean):void {
@@ -47,19 +47,20 @@ export class Drone {
     }
 
     GetPosition(): number[]{
-        return [this.sprite.body.velocity.x, this.sprite.body.velocity.y,this.sprite.body.x,this.sprite.body.y, this.sprite.body.angle, this.GetLevel()];
+        return [this.sprite.body.velocity.x, this.sprite.body.velocity.y,this.sprite.body.x,this.sprite.body.y, this.sprite.body.rotation, this.sprite.body.angularVelocity, this.GetLevel(), this._lastUpdate++];
     }
     private _lastUpdate = -1;
-    SetPosition(data : number[], ref : number){
-        if(ref <= this._lastUpdate || data == null)
+    SetPosition(data : number[]){
+        if(data[7] <= this._lastUpdate || data == null)
             return;
-        this._lastUpdate = ref;
+        this._lastUpdate = data[7];
         this.sprite.body.velocity.x = data[0];
         this.sprite.body.velocity.y = data[1];
         this.sprite.body.x = data[2];
         this.sprite.body.y = data[3];
-        this.sprite.body.angle = data[4];
-        this.SetLevel(data[5]);
+        this.sprite.body.rotation = data[4];
+        this.sprite.body.angularVelocity = data[5];
+        this.SetLevel(data[6]);
     }
 
     SetLevel(lvl : number){

@@ -131,7 +131,7 @@ export class SimpleGame{
             drone.SetId(data.id);
             this._drones.push(drone);
         }
-        drone.SetPosition(data.droneData, data.counter);
+        drone.SetPosition(data.droneData);
         this._map.SetElement(drone);
     }
 

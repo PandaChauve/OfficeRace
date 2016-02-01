@@ -4,7 +4,6 @@ export interface StateReport{
     id : number;
     gameData : any;
     droneData:any;
-    counter : number;
 };
 
 export class DroneApi{

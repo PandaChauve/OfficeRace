@@ -106,6 +106,7 @@ export class Map
         this._game.physics.p2.enable(obj);
         obj.body.x = x;
         obj.body.y = y;
+        obj.body.static = true;
         (<any>obj.body).isTarget = true;
         (<any>obj.body).droneLevel = lvl;
         this._slices[lvl].Dynamic.add(obj);
