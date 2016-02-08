@@ -13,6 +13,7 @@ export class SimpleGame{
     private _game: Phaser.Game;
     private _drones: Drone[];
     private _player: Drone;
+    private _shadow: Drone;
     private _keys: Phaser.CursorKeys;
     private _map : Map;
     private _api = new DroneApi();
@@ -45,12 +46,14 @@ export class SimpleGame{
         var that = this;
         this._drones = [];
         this._player = new Drone(this._game, true);
+        this._shadow = new Drone(this._game, false);
         this._map = new Map(this._game);
         this._map.AddTarget(100,100,0);
         this._map.AddTarget(200,200,1);
         this._map.AddTarget(150,150,2);
         this._api.Register(function(id : number){
             that._player.SetId(id);
+            that._shadow.SetId(-id);
         });
 
         this._game.stage.backgroundColor = "#FFDFDF";
@@ -65,9 +68,12 @@ export class SimpleGame{
 
         this._game.physics.p2.setBoundsToWorld(true, true, true, true, false);
         this._map.SetElement(this._player);
+        this._map.SetElement(this._shadow);
     }
 
     private collide(left : any, right : any){
+        if(left.mainDrone || right.mainDrone)
+            return false;
         if(left.mainDrone && right.mainDrone === undefined){ //FIXME you cna go up on target
             this._map.SetCollide(right.droneLevel);
         }
@@ -88,30 +94,35 @@ export class SimpleGame{
         }
         return left.droneLevel == right.droneLevel; //collide if same level
     }
-
-    private _updateCounter = 0;
+    counter = 0;
     public update() :void {
         this._player.TicUpdate(this._keys);
-        this._updateCounter = (this._updateCounter+1)%10;
-        if(this._updateCounter == 0){
-            var that = this;
-            this._api.SendPos(this._player.GetPosition(), this._map.RemainingTargetCount(),function(data : StateReport[]) : void{
-                for(let idx in data){
-                    if(data[idx].id!= that._player.GetId()) {
-                        if(data[idx].gameData == 0){
-                            alert("looser");
-                            that._game.paused = true;
-                        }
-                        that.UpdateDrone(data[idx]);
+        this._shadow.TicUpdateShadow();
+        var that = this;
+        if(this.counter++%60==0)
+        this._api.SendPos(this._player.GetPosition(), this._map.RemainingTargetCount(),function(data : StateReport[]) : void{
+            for(let idx in data){
+                if(data[idx].id!= that._player.GetId()) {
+                    if(data[idx].gameData == 0){
+                        alert("looser");
+                        that._game.paused = true;
                     }
+                    that.UpdateDrone(data[idx]);
                 }
-            });
+                else{
 
-            if(this._map.IsMapComplete()){
-                alert("I think you are our winner ...");
-                that._game.paused = true;
+                    that._shadow.SetPosition( data[idx].droneData);
+                    that._shadow.SetLevel(that._shadow.GetLevel()-1);
+                    that._map.SetElement(that._shadow);
+                }
             }
+        });
+
+        if(this._map.IsMapComplete()){
+            alert("I think you are our winner ...");
+            that._game.paused = true;
         }
+
     }
 
     public FindDrone(id : number ): Drone{

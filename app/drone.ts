@@ -1,4 +1,5 @@
 ///<reference path="../node_modules/phaser/typescript/phaser.d.ts" />
+import BodyOptions = p2.BodyOptions;
 export class Drone {
     public sprite:Phaser.Sprite;
 
@@ -6,6 +7,8 @@ export class Drone {
         this.sprite = game.add.sprite(8.5, 19, 'drone');
         this.sprite.animations.add('fly', [0, 1], 10, true);
         game.physics.p2.enable(this.sprite);
+        this.sprite.body.angularDamping = 0.7;
+        this.sprite.body.damping = 0.6;
         (<any>this.sprite.body).mainDrone = ismain;
         this.SetLevel(-1);
     }
@@ -16,13 +19,11 @@ export class Drone {
     public GetId(){
         return this._id;
     }
-    private Slow(): void {
-        this.sprite.body.data.velocity[0] *= 0.985;
-        this.sprite.body.data.velocity[1] *= 0.985;
-        this.sprite.body.data.angularVelocity *= 0.7;
-    }
 
+    private lastKeys = [false, false, false, false];
     private UpdateAngle(turnLeft:boolean, turnRight:boolean):void {
+        this.lastKeys[0] = turnLeft;
+        this.lastKeys[1] = turnRight;
         if (turnLeft == turnRight)
             return;
         else
@@ -30,7 +31,8 @@ export class Drone {
     }
 
     private UpdateSpeed(accelerate:boolean, decelerate:boolean):void {
-        this.Slow();
+        this.lastKeys[2] = accelerate;
+        this.lastKeys[3] = decelerate;
 
         if (accelerate) {
             this.sprite.body.thrust(200);
@@ -38,6 +40,7 @@ export class Drone {
         if (decelerate) {
             this.sprite.body.reverse(200);
         }
+        console.log(this.sprite.body.data.velocity[0] + ' - ' +this.sprite.body.data.velocity[1] + ' - ' + (<any>this.sprite.body).mainDrone);
     }
 
     public TicUpdate(keys:Phaser.CursorKeys):void {
@@ -46,21 +49,75 @@ export class Drone {
         this.UpdateSpeed(keys.up.isDown, keys.down.isDown);
     }
 
-    GetPosition(): number[]{
-        return [this.sprite.body.velocity.x, this.sprite.body.velocity.y,this.sprite.body.x,this.sprite.body.y, this.sprite.body.rotation, this.sprite.body.angularVelocity, this.GetLevel(), this._lastUpdate++];
+    GetPosition(): any[]{
+        var opt = <any>{};
+        opt.position = this.sprite.body.data.position;
+        opt.velocity = this.sprite.body.data.velocity;
+        opt.angle = this.sprite.body.data.angle;
+        opt.angularVelocity = this.sprite.body.data.angularVelocity;
+        opt.keys = this.lastKeys;
+        return [opt, this.GetLevel(), new Date().getTime()];
     }
-    private _lastUpdate = -1;
-    SetPosition(data : number[]){
-        if(data[7] <= this._lastUpdate || data == null)
+
+    private _previousUpdate : any[];
+    private _previousUpdateTime  = 0;
+    private _position : any[];
+    SetPosition(data : any[]) : void{
+        this._position = data;
+    }
+
+    public TicUpdateShadow(){
+        var currentTime = new Date().getTime();
+        var data = this._position;
+        if(data == null)
             return;
-        this._lastUpdate = data[7];
-        this.sprite.body.velocity.x = data[0];
-        this.sprite.body.velocity.y = data[1];
-        this.sprite.body.x = data[2];
-        this.sprite.body.y = data[3];
-        this.sprite.body.rotation = data[4];
-        this.sprite.body.angularVelocity = data[5];
-        this.SetLevel(data[6]);
+        if(data == this._previousUpdate)
+        {
+            this.UpdateAngle(this.lastKeys[0], this.lastKeys[1]);
+            this.UpdateSpeed(this.lastKeys[2], this.lastKeys[3]);
+            return;
+        }
+
+        if(this._previousUpdate && data[2] < this._previousUpdate[2])
+        {
+            console.log("too old");
+            return;
+        }
+
+        var opt = <BodyOptions>data[0];
+        var d = this.sprite.body.data;
+        if(this._previousUpdateTime != 0){
+            var ticDelta =  currentTime-this._previousUpdateTime;
+
+            var dataDelta = data[2]-this._previousUpdate[2];
+            var ratio = ticDelta/dataDelta;
+            //console.log(ratio + ' - ' + ticDelta + ' - ' + dataDelta);
+            opt.position[0] = this.PonderateValue(d.position[0], opt.position[0], ratio);
+            opt.position[1] = this.PonderateValue(d.position[1], opt.position[1], ratio);
+            opt.angle = this.PonderateValue(d.angle, opt.angle, ratio);
+            //data[2] =  this.PonderateValue(this._previousUpdate[2], data[2], ratio);
+        }
+        if(d.position[0] - opt.position[0] > 1) {
+            //console.log(d.position[0] - opt.position[0]);
+        }
+        d.position = opt.position;
+        d.velocity = opt.velocity;
+        d.angle = opt.angle;
+        d.angularVelocity = opt.angularVelocity;
+
+        this.lastKeys = data[0].keys;
+        this.UpdateAngle(this.lastKeys[0], this.lastKeys[1]);
+        this.UpdateSpeed(this.lastKeys[2], this.lastKeys[3]);
+        this._previousUpdate = data;
+        this._previousUpdateTime = currentTime;
+        this.SetLevel(1);
+        console.log("-------------------------sync----------------------------");
+        console.log( d.velocity[0] + '/' +  d.velocity[1]);
+    }
+
+    private PonderateValue(old : number, current : number, ratio:number) : number{
+       // console.log(ratio);
+        return (current - old)*ratio + old;
     }
 
     SetLevel(lvl : number){
